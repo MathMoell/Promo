@@ -1,0 +1,34 @@
+version: '3.8'
+
+volumes:
+  prometheus-data: {}
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./config:/etc/prometheus
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+  nodeexporter:
+    image: prom/node-exporter:latest
+    container_name: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+    network_mode: host
